@@ -1,0 +1,16 @@
+num = { ("-")? ~ (ASCII_DIGIT)+ ~ ("." ~ (ASCII_DIGIT)+)? }
+int = { ("-")? ~ (ASCII_DIGIT)+ }
+
+
+mult = { "*" ~ ("[" ~ int ~ "]")? }
+multAll = { "**" }
+duplicate = { "***" }
+
+inner_str_text = { (!(str_marks | num) ~ ANY)+ }
+str_param = { (str_marks ~ (!str_marks ~ (num | inner_str_text))* ~ str_marks) }
+
+command = { str_param  ~ (spacing* ~ (((multAll | mult) ~ spacing* ~ num) | (duplicate ~ spacing* ~ int)))+ }
+
+
+spacing = _{ " " | "\t" }
+str_marks = _{ "\"" }
