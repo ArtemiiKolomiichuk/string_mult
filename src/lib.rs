@@ -12,6 +12,9 @@ pub fn evaluate(input: &str) -> anyhow::Result<String>{
         println!("{:#?}", inner);
         return Err(anyhow::anyhow!("not enough logical parts"));
     }
+
+    let mut accum;
+
     let mut parts : Vec<StrPiece> = Vec::new();
     let mut operation = Operation::Mult(None);
     for part in inner{
@@ -41,7 +44,6 @@ pub fn evaluate(input: &str) -> anyhow::Result<String>{
             Rule::duplicate => operation = Operation::Duplicate,
 
             Rule::int => {
-                println!("int: {}", part.as_str());
                 let num = part.as_str().parse::<isize>()?;
                 match operation{
                     Operation::Duplicate => {
@@ -49,14 +51,33 @@ pub fn evaluate(input: &str) -> anyhow::Result<String>{
                         if num == 0{
                             return Ok("".to_string());
                         }
+
+
+
                         if num < 0{
                             let str = to_string(parts).chars().rev().collect::<String>();
-                            let mut accum = String::new();
+                            accum = String::new();
+                            accum.push('\"');
                             for _ in 0..(-num){
                                 accum.push_str(&str);
                             }
-                            return Ok(accum);
+                            accum.push('\"');
+                            let data = Grammar::parse(Rule::str_param, accum.as_str())?
+                                .next()
+                                .ok_or_else( || anyhow::anyhow!("no params found"))?;
+                            parts = Vec::new();
+                            for inner_part in data.into_inner(){
+                                match inner_part.as_rule(){
+                                    Rule::num => parts.push(StrPiece::Num(inner_part.as_str().parse::<f64>()?)),
+                                    Rule::inner_str_text => parts.push(StrPiece::Str(inner_part.as_str())),
+                                    r => return Err(anyhow::anyhow!("unexpected rule {:?}", r))
+                                }
+                            }
+                            continue;
                         }
+
+
+
                         for _ in 0..(num-1) {
                             for part in &parts{
                                 match part{
@@ -71,7 +92,6 @@ pub fn evaluate(input: &str) -> anyhow::Result<String>{
                 };
             },
             Rule::num => {
-                println!("num: {}", part.as_str());
                 let num = part.as_str().parse::<f64>()?;
                 match operation{
                     Operation::Mult(ref mut index) => {

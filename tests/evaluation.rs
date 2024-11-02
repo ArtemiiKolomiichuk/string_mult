@@ -82,4 +82,25 @@ mod evaluation{
         Ok(())
     }
 
+    #[test]
+    fn two_operations() -> anyhow::Result<()>{
+        let data = evaluate("\"123abcdef\"   \t\t***2  *[1] 2")?;
+        assert_eq!(data, "123abcdef246abcdef");
+        Ok(())
+    }
+
+    #[test]
+    fn three_operations() -> anyhow::Result<()>{
+        let data = evaluate("\"123abcdef\"   \t\t***2  * 2 ***2")?;
+        assert_eq!(data, "246abcdef123abcdef246abcdef123abcdef");
+        Ok(())
+    }
+
+    #[test]
+    fn many_operations() -> anyhow::Result<()>{
+        let data = evaluate("\"1a\"   \t\t***2  * 2 ***2  *[2] 3 ** 2\t\t ***2 *[-2] 10.1")?;
+        assert_eq!(data, "4a2a12a2a4a2a121.2a2a");
+        Ok(())
+    }
+
 }
