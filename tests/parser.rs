@@ -35,6 +35,17 @@ mod parser {
     }
 
     #[test]
+    fn int() -> anyhow::Result<()> {
+        let data = Grammar::parse(Rule::int, "-44,-15")?
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("no int"))?;
+        print!("{:?}", data);
+        assert_eq!(data.as_str(), "-44");
+        assert_eq!(data.as_span().start(), 0);
+        Ok(())
+    }
+
+    #[test]
     fn mult() -> anyhow::Result<()> {
         let mut data = Grammar::parse(Rule::mult, "*")?
             .next()
@@ -60,6 +71,38 @@ mod parser {
         print!("{:?}", data);
         assert_eq!(data.as_str(), "*");
         assert_eq!(data.as_span().start(), 0);
+        Ok(())
+    }
+
+    #[test]
+    fn mult_all() -> anyhow::Result<()> {
+        let data = Grammar::parse(Rule::multAll, "*****")?
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("no mult_all"))?;
+        print!("{:?}", data);
+        assert_eq!(data.as_str(), "**");
+        assert_eq!(data.as_span().start(), 0);
+        Ok(())
+    }
+
+    #[test]
+    fn duplicate() -> anyhow::Result<()> {
+        let data = Grammar::parse(Rule::duplicate, "***")?
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("no duplicate"))?;
+        print!("{:?}", data);
+        assert_eq!(data.as_str(), "***");
+        assert_eq!(data.as_span().start(), 0);
+        Ok(())
+    }
+
+    #[test]
+    fn inner_str_text() -> anyhow::Result<()> {
+        let data = Grammar::parse(Rule::inner_str_text, " abc -4def,--5\"")?
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("no inner_str"))?;
+        print!("{:#?}", data);
+        assert_eq!(data.as_str(), " abc ");
         Ok(())
     }
 

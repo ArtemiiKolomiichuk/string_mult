@@ -1,7 +1,6 @@
 num = { ("-")? ~ (ASCII_DIGIT)+ ~ ("." ~ (ASCII_DIGIT)+)? }
 int = { ("-")? ~ (ASCII_DIGIT)+ }
 
-
 mult = { "*" ~ ("[" ~ int ~ "]")? }
 multAll = { "**" }
 duplicate = { "***" }
