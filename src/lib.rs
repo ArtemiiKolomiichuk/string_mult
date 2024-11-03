@@ -1,19 +1,30 @@
 use pest::Parser;
 use pest_derive::Parser;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum EvalError {
+    #[error("no command found")]
+    NoCommand,
+    #[error("unexpected rule {0}")]
+    UnexpectedRule(String),
+    #[error("unexpected evaluation error")]
+    Unknown,
+}
 
 #[derive(Parser)]
 #[grammar = "./gramm.pest"]
 pub struct Grammar;
 
 pub fn evaluate(input: &str) -> anyhow::Result<String> {
-    let data = Grammar::parse(Rule::command, input)?
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("no command found"))?;
-    let inner = data.into_inner();
-    if inner.len() < 2 {
-        println!("{:#?}", inner);
-        return Err(anyhow::anyhow!("not enough logical parts"));
+    let data = Grammar::parse(Rule::command, input);
+    if data.is_err() {
+        return Err(anyhow::anyhow!(EvalError::NoCommand));
     }
+    let inner = data?
+        .next()
+        .ok_or_else(|| EvalError::NoCommand)?
+        .into_inner();
 
     let mut accum;
 
@@ -27,7 +38,12 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                     match inner_part.as_rule() {
                         Rule::num => parts.push(StrPiece::Num(inner_part.as_str().parse::<f64>()?)),
                         Rule::inner_str_text => parts.push(StrPiece::Str(inner_part.as_str())),
-                        r => return Err(anyhow::anyhow!("unexpected rule {:?}", r)),
+                        r => {
+                            return Err(anyhow::anyhow!(EvalError::UnexpectedRule(format!(
+                                "{:?}",
+                                r
+                            ))))
+                        }
                     }
                 }
             }
@@ -47,7 +63,6 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                 let int = part.as_str().parse::<isize>()?;
                 match operation {
                     Operation::Duplicate => {
-                        let mut new_parts = Vec::new();
                         if int == 0 {
                             return Ok("".to_string());
                         }
@@ -60,9 +75,10 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                                 accum.push_str(&str);
                             }
                             accum.push('\"');
+
                             let data = Grammar::parse(Rule::str_param, accum.as_str())?
                                 .next()
-                                .ok_or_else(|| anyhow::anyhow!("no params found"))?;
+                                .ok_or_else(|| EvalError::Unknown)?;
                             parts = Vec::new();
                             for inner_part in data.into_inner() {
                                 match inner_part.as_rule() {
@@ -71,12 +87,17 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                                     Rule::inner_str_text => {
                                         parts.push(StrPiece::Str(inner_part.as_str()))
                                     }
-                                    r => return Err(anyhow::anyhow!("unexpected rule {:?}", r)),
+                                    r => {
+                                        return Err(anyhow::anyhow!(EvalError::UnexpectedRule(
+                                            format!("{:?}", r)
+                                        )))
+                                    }
                                 }
                             }
                             continue;
                         }
 
+                        let mut new_parts = Vec::new();
                         for _ in 0..(int - 1) {
                             for part in &parts {
                                 match part {
@@ -127,7 +148,7 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                         for part in &mut parts {
                             match part {
                                 StrPiece::Num(n) => *n *= num,
-                                StrPiece::Str(_) => continue,
+                                _ => continue,
                             }
                         }
                     }
