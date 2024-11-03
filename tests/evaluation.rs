@@ -101,4 +101,11 @@ mod evaluation {
         assert_eq!(data, "4a2a12a2a4a2a121.2a2a");
         Ok(())
     }
+
+    #[test]
+    fn short_command_is_err() {
+        let res = evaluate("\"5\"***");
+        assert!(res.is_err());
+        println!("{:?}", res);
+    }
 }
