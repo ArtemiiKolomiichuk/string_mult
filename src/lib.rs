@@ -2,6 +2,11 @@ use pest::Parser;
 use pest_derive::Parser;
 use thiserror::Error;
 
+#[derive(Parser)]
+#[grammar = "./gramm.pest"]
+pub struct Grammar;
+
+
 #[derive(Error, Debug)]
 pub enum EvalError {
     #[error("no command found")]
@@ -11,10 +16,6 @@ pub enum EvalError {
     #[error("unexpected evaluation error")]
     Unknown,
 }
-
-#[derive(Parser)]
-#[grammar = "./gramm.pest"]
-pub struct Grammar;
 
 pub fn evaluate(input: &str) -> anyhow::Result<String> {
     let data = Grammar::parse(Rule::command, input);

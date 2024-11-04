@@ -1,13 +1,23 @@
+//! This is a simple grammar for parsing string multiplication commands.
+
+/// signed floating point or integer number
 num = { ("-")? ~ (ASCII_DIGIT)+ ~ ("." ~ (ASCII_DIGIT)+)? }
+/// signed integer number
 int = { ("-")? ~ (ASCII_DIGIT)+ }
 
+/// multiplication operator with optional index
 mult = { "*" ~ ("[" ~ int ~ "]")? }
+/// multiplication operator for multiplying all numbers in string
 multAll = { "**" }
+/// duplication operator
 duplicate = { "***" }
 
+/// part of the string param that is not a number
 inner_str_text = { (!(str_marks | num) ~ ANY)+ }
+/// string parameter for command surrounded by quote marks
 str_param = { (str_marks ~ (!str_marks ~ (num | inner_str_text))* ~ str_marks) }
 
+/// command for multiplying string
 command = { str_param  ~ (spacing* ~ (((multAll | mult) ~ spacing* ~ num) | (duplicate ~ spacing* ~ int)))+ }
 
 
