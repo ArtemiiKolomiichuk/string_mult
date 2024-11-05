@@ -8,6 +8,7 @@ use thiserror::Error;
 pub struct StringMultGrammar;
 
 #[derive(Error, Debug)]
+///An error that can occur during evaluation.
 pub enum EvalError {
     #[error("no command found")]
     NoCommand,
