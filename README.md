@@ -17,7 +17,7 @@ The library uses the `pest` parser generator to define the grammar of the comman
    - `command`: Recognizes complete commands for multiplying strings.
    - `commands_list`: Recognizes a list of commands.
 
-![parsing scheme illustraition](scheme.png)
+![parsing scheme illustraition](https://raw.githubusercontent.com/ArtemiiKolomiichuk/string_mult/refs/heads/master/scheme.png)
 
 2. **Evaluation**: The library includes `evaluate` and `evaluate_list` functions that parse string and string from file respectively and return the result of the command execution.
 
