@@ -158,4 +158,20 @@ mod parser {
         assert_eq!(inner_pairs.next().unwrap().as_str(), "3");
         Ok(())
     }
+
+    #[test]
+    fn commands_list_iterates() -> anyhow::Result<()> {
+        let data = StringMultGrammar::parse(Rule::commands_list, "\"12 packs\" *** 3 *2\n \"4packs\" *2 \"19 bottles.\" **3")?
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("no command"))?;
+        print!("{:#?}", data);
+        let mut inner_pairs = data.into_inner();
+        let first = inner_pairs.next().unwrap();
+        assert_eq!(first.as_str(), "\"12 packs\" *** 3 *2");
+        let second = inner_pairs.next().unwrap();
+        assert_eq!(second.as_str(), "\"4packs\" *2");
+        let third = inner_pairs.next().unwrap();
+        assert_eq!(third.as_str(), "\"19 bottles.\" **3");
+        Ok(())
+    }
 }

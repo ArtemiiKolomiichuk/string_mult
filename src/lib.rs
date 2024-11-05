@@ -10,6 +10,8 @@ pub struct StringMultGrammar;
 #[derive(Error, Debug)]
 ///An error that can occur during evaluation.
 pub enum EvalError {
+    #[error("commands list not found")]
+    NoCommandsList,
     #[error("no command found")]
     NoCommand,
     #[error("unexpected rule {0}")]
@@ -20,7 +22,21 @@ pub enum EvalError {
     Unknown,
 }
 
-///Evaluates a string multiplication command, returning a new String without quote marks.
+///Evaluates a list of commands
+pub fn evaluate_list(input: &str) -> anyhow::Result<Vec<Result<String, anyhow::Error>>> {
+    let mut results = Vec::new();
+    let data = StringMultGrammar::parse(Rule::commands_list, input);
+    if data.is_err() {
+        return Err(anyhow::anyhow!(EvalError::NoCommandsList));
+    }
+    let inner = data?.next().ok_or_else(|| EvalError::NoCommandsList)?.into_inner();
+    for part in inner {
+        results.push(evaluate(part.as_str()));
+    }
+    Ok(results)
+}
+
+///Evaluates a single string multiplication command, returning a new String without quote marks.
 pub fn evaluate(input: &str) -> anyhow::Result<String> {
     let data = StringMultGrammar::parse(Rule::command, input);
     if data.is_err() {

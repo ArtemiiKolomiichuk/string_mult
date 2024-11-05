@@ -97,7 +97,7 @@ mod evaluation {
 
     #[test]
     fn many_operations() -> anyhow::Result<()> {
-        let data = evaluate("\"1a\"   \t\t***2  * 2 ***2  *[2] 3 ** 2\t\t ***2 *[-2] 10.1")?;
+        let data = evaluate("  \"1a\"   \t\t***2  * 2 ***2  *[2] 3 ** 2\t\t ***2 *[-2] 10.1 ")?;
         assert_eq!(data, "4a2a12a2a4a2a121.2a2a");
         Ok(())
     }
@@ -105,7 +105,19 @@ mod evaluation {
     #[test]
     fn short_command_is_err() {
         let res = evaluate("\"5\"***");
-        assert!(res.is_err());
         println!("{:?}", res);
+        assert!(res.is_err());
     }
+
+    #[test]
+    fn command_list_evaluates() -> anyhow::Result<()> {
+        let data = "\"12 packs\" *** 3 *2\n \"4packs\" *[2]2 \"19 bottles.\" **3";
+        let results = string_mult::evaluate_list(data)?;
+        assert_eq!(results.len(), 3);
+        assert_eq!(results[0].as_ref().unwrap(), "24 packs12 packs12 packs");
+        assert!(results[1].is_err());
+        assert_eq!(results[2].as_ref().unwrap(), "57 bottles.");
+        Ok(())
+    }
+
 }
