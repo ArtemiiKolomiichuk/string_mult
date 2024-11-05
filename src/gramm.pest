@@ -1,8 +1,9 @@
-//! This is a simple grammar for parsing string multiplication commands.
+//! Simple grammar rules for parsing string multiplication commands.
 
 /// signed floating point or integer number
 num = { ("-")? ~ (ASCII_DIGIT)+ ~ ("." ~ (ASCII_DIGIT)+)? }
-/// signed integer number
+/// signed integer number; it only appears in the 'mult' optional index and 'duplicate' command arguments;
+/// integer numbers in 'mult' and 'multAll' commands are recognized as num
 int = { ("-")? ~ (ASCII_DIGIT)+ }
 
 /// multiplication operator with optional index
@@ -20,6 +21,7 @@ str_param = { (str_marks ~ (!str_marks ~ (num | inner_str_text))* ~ str_marks) }
 /// command for multiplying string
 command = { str_param  ~ (spacing* ~ (((multAll | mult) ~ spacing* ~ num) | (duplicate ~ spacing* ~ int)))+ }
 
-
+/// silent rule for inline whitespace
 spacing = _{ " " | "\t" }
+/// silent rule for quote marks
 str_marks = _{ "\"" }

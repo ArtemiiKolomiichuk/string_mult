@@ -4,8 +4,8 @@ use thiserror::Error;
 
 #[derive(Parser)]
 #[grammar = "./gramm.pest"]
-pub struct Grammar;
-
+///A simple grammar for parsing string multiplication commands.
+pub struct StringMultGrammar;
 
 #[derive(Error, Debug)]
 pub enum EvalError {
@@ -13,12 +13,15 @@ pub enum EvalError {
     NoCommand,
     #[error("unexpected rule {0}")]
     UnexpectedRule(String),
+    #[error("index `{0}` out of range '0..{1}`")]
+    IndexOutOfRange(usize, usize),
     #[error("unexpected evaluation error")]
     Unknown,
 }
 
+///Evaluates a string multiplication command, returning a new String without quote marks.
 pub fn evaluate(input: &str) -> anyhow::Result<String> {
-    let data = Grammar::parse(Rule::command, input);
+    let data = StringMultGrammar::parse(Rule::command, input);
     if data.is_err() {
         return Err(anyhow::anyhow!(EvalError::NoCommand));
     }
@@ -77,7 +80,7 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                             }
                             accum.push('\"');
 
-                            let data = Grammar::parse(Rule::str_param, accum.as_str())?
+                            let data = StringMultGrammar::parse(Rule::str_param, accum.as_str())?
                                 .next()
                                 .ok_or_else(|| EvalError::Unknown)?;
                             parts = Vec::new();
@@ -136,12 +139,22 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                                 StrPiece::Num(n) => {
                                     if i == index {
                                         *part = StrPiece::Num(num * *n);
+                                        i = usize::MAX;
                                         break;
                                     }
                                     i += 1;
                                 }
                                 _ => continue,
                             }
+                        }
+                        if i != usize::MAX {
+                            return Err(anyhow::anyhow!(EvalError::IndexOutOfRange(
+                                index,
+                                parts
+                                    .iter()
+                                    .filter(|p| matches!(p, StrPiece::Num(_)))
+                                    .count()
+                            )));
                         }
                     }
 
@@ -156,7 +169,13 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                     _ => continue,
                 };
             }
-            _ => continue,
+
+            r => {
+                return Err(anyhow::anyhow!(EvalError::UnexpectedRule(format!(
+                    "{:?}",
+                    r
+                ))))
+            }
         }
     }
     Ok(to_string(parts))
