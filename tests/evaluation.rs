@@ -119,5 +119,4 @@ mod evaluation {
         assert_eq!(results[2].as_ref().unwrap(), "57 bottles.");
         Ok(())
     }
-
 }

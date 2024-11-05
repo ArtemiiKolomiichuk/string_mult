@@ -29,7 +29,7 @@ pub fn evaluate_list(input: &str) -> anyhow::Result<Vec<Result<String, anyhow::E
     if data.is_err() {
         return Err(anyhow::anyhow!(EvalError::NoCommandsList));
     }
-    let inner = data?.next().ok_or_else(|| EvalError::NoCommandsList)?.into_inner();
+    let inner = data?.next().ok_or(EvalError::NoCommandsList)?.into_inner();
     for part in inner {
         results.push(evaluate(part.as_str()));
     }
@@ -42,10 +42,7 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
     if data.is_err() {
         return Err(anyhow::anyhow!(EvalError::NoCommand));
     }
-    let inner = data?
-        .next()
-        .ok_or_else(|| EvalError::NoCommand)?
-        .into_inner();
+    let inner = data?.next().ok_or(EvalError::NoCommand)?.into_inner();
 
     let mut accum;
 
@@ -99,7 +96,7 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
 
                             let data = StringMultGrammar::parse(Rule::str_param, accum.as_str())?
                                 .next()
-                                .ok_or_else(|| EvalError::Unknown)?;
+                                .ok_or(EvalError::Unknown)?;
                             parts = Vec::new();
                             for inner_part in data.into_inner() {
                                 match inner_part.as_rule() {

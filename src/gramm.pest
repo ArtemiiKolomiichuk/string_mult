@@ -27,6 +27,6 @@ commands_list = {(file_spacing* ~ command ~ file_spacing*)+}
 /// silent rule for inline whitespace
 spacing = _{ " " | "\t" }
 /// whitespace spacing in file
-file_spacing = _{ spacing | "\n"}
+file_spacing = _{ WHITE_SPACE }
 /// silent rule for quote marks
 str_marks = _{ "\"" }

@@ -8,7 +8,7 @@ mod parser {
     fn num() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::num, "-44.43,-15")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no field"))?;
+            .ok_or(anyhow::anyhow!("no field"))?;
         print!("{:?}", data);
         assert_eq!(data.as_str(), "-44.43");
         assert_eq!(data.as_span().start(), 0);
@@ -19,7 +19,7 @@ mod parser {
     fn num_splits_on_spacing() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::num, "-4 4.43 -15")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no field"))?;
+            .ok_or(anyhow::anyhow!("no field"))?;
         print!("{:?}", data);
         assert_eq!(data.as_str(), "-4");
         assert_eq!(data.as_span().start(), 0);
@@ -38,7 +38,7 @@ mod parser {
     fn int() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::int, "-44,-15")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no int"))?;
+            .ok_or(anyhow::anyhow!("no int"))?;
         print!("{:?}", data);
         assert_eq!(data.as_str(), "-44");
         assert_eq!(data.as_span().start(), 0);
@@ -49,14 +49,14 @@ mod parser {
     fn mult() -> anyhow::Result<()> {
         let mut data = StringMultGrammar::parse(Rule::mult, "*")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no mult"))?;
+            .ok_or(anyhow::anyhow!("no mult"))?;
         println!("{:?}", data);
         assert_eq!(data.as_str(), "*");
         assert_eq!(data.as_span().start(), 0);
 
         data = StringMultGrammar::parse(Rule::mult, "*[3]")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no parametrized mult"))?;
+            .ok_or(anyhow::anyhow!("no parametrized mult"))?;
         println!("{:?}", data);
         assert_eq!(data.as_str(), "*[3]");
         assert_eq!(data.as_span().start(), 0);
@@ -67,7 +67,7 @@ mod parser {
     fn wrong_param_mult_is_mult() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::mult, "*[-3.5]")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no mult"))?;
+            .ok_or(anyhow::anyhow!("no mult"))?;
         print!("{:?}", data);
         assert_eq!(data.as_str(), "*");
         assert_eq!(data.as_span().start(), 0);
@@ -78,7 +78,7 @@ mod parser {
     fn mult_all() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::multAll, "*****")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no mult_all"))?;
+            .ok_or(anyhow::anyhow!("no mult_all"))?;
         print!("{:?}", data);
         assert_eq!(data.as_str(), "**");
         assert_eq!(data.as_span().start(), 0);
@@ -89,7 +89,7 @@ mod parser {
     fn duplicate() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::duplicate, "***")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no duplicate"))?;
+            .ok_or(anyhow::anyhow!("no duplicate"))?;
         print!("{:?}", data);
         assert_eq!(data.as_str(), "***");
         assert_eq!(data.as_span().start(), 0);
@@ -100,7 +100,7 @@ mod parser {
     fn inner_str_text() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::inner_str_text, " abc -4def,--5\"")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no inner_str"))?;
+            .ok_or(anyhow::anyhow!("no inner_str"))?;
         print!("{:#?}", data);
         assert_eq!(data.as_str(), " abc ");
         Ok(())
@@ -110,7 +110,7 @@ mod parser {
     fn str_param_splits_numbers() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::str_param, "\"3 abc -4def,--5\"")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no str_param"))?;
+            .ok_or(anyhow::anyhow!("no str_param"))?;
         print!("{:#?}", data);
         let mut inner_pairs = data.into_inner();
         assert_eq!(inner_pairs.next().unwrap().as_str(), "3");
@@ -125,7 +125,7 @@ mod parser {
     fn str_param_allows_numbers_abscence() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::str_param, "\"abc def\"")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no str_param"))?;
+            .ok_or(anyhow::anyhow!("no str_param"))?;
         print!("{:#?}", data);
         assert_eq!(data.as_str(), "\"abc def\"");
         Ok(())
@@ -135,7 +135,7 @@ mod parser {
     fn command_ignores_spacing() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::command, "\"str\" \t\t  *[3]\t  \t\t-12.2")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no command"))?;
+            .ok_or(anyhow::anyhow!("no command"))?;
         print!("{:#?}", data);
         let mut inner_pairs = data.into_inner();
         assert_eq!(inner_pairs.next().unwrap().as_str(), "\"str\"");
@@ -148,7 +148,7 @@ mod parser {
     fn command_allows_multiple_operations() -> anyhow::Result<()> {
         let data = StringMultGrammar::parse(Rule::command, "\"str\" \t\t  *-12.2 \t*** 3")?
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no command"))?;
+            .ok_or(anyhow::anyhow!("no command"))?;
         print!("{:#?}", data);
         let mut inner_pairs = data.into_inner();
         assert_eq!(inner_pairs.next().unwrap().as_str(), "\"str\"");
@@ -161,9 +161,12 @@ mod parser {
 
     #[test]
     fn commands_list_iterates() -> anyhow::Result<()> {
-        let data = StringMultGrammar::parse(Rule::commands_list, "\"12 packs\" *** 3 *2\n \"4packs\" *2 \"19 bottles.\" **3")?
-            .next()
-            .ok_or_else(|| anyhow::anyhow!("no command"))?;
+        let data = StringMultGrammar::parse(
+            Rule::commands_list,
+            "\"12 packs\" *** 3 *2\n \"4packs\" *2 \"19 bottles.\" **3",
+        )?
+        .next()
+        .ok_or(anyhow::anyhow!("no command"))?;
         print!("{:#?}", data);
         let mut inner_pairs = data.into_inner();
         let first = inner_pairs.next().unwrap();
