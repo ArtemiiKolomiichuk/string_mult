@@ -5,6 +5,7 @@ version = "0.2.1"
 edition = "2021"
 authors = ["Artemii Kolomiichuk <artemii.kolomiichuk@ukma.edu.ua>"]
 readme = "README.md"
+repository = "https://github.com/ArtemiiKolomiichuk/string_mult"
 license = "MIT"
 
 [dependencies]
