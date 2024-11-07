@@ -1,5 +1,5 @@
 mod evaluation {
-    use string_mult::evaluate;
+    use string_mult::evaluating::{evaluate, evaluate_list};
     mod multiplication {
         use super::*;
 
@@ -112,7 +112,7 @@ mod evaluation {
     #[test]
     fn command_list_evaluates() -> anyhow::Result<()> {
         let data = "\"12 packs\" *** 3 *2\n \"4packs\" *[2]2 \"19 bottles.\" **3";
-        let results = string_mult::evaluate_list(data)?;
+        let results = evaluate_list(data)?;
         assert_eq!(results.len(), 3);
         assert_eq!(results[0].as_ref().unwrap(), "24 packs12 packs12 packs");
         assert!(results[1].is_err());

@@ -1,5 +1,6 @@
 use std::env;
-use string_mult::evaluate_list;
+
+use string_mult::evaluating::evaluate_list;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
