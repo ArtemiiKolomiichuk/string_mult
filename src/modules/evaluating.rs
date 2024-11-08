@@ -1,3 +1,5 @@
+//! Provides evaluating functionality for `StringMultCommand`
+
 use parsing::{parse_command, ParseError};
 use pest::Parser;
 use thiserror::Error;
@@ -11,17 +13,23 @@ use super::*;
 ///An error that can occur during evaluation.
 pub enum EvalError {
     #[error("commands list not found")]
+    /// No commands list was found
     NoCommandsList,
     #[error("no command found")]
+    /// No command was found
     NoCommand,
     #[error("parsing error")]
+    /// Parsing error occured 
     ParseError(#[from] ParseError),
 
     #[error("index '{0}' out of range '0..{1}'")]
+    /// Index for multiplication was out of range
     IndexOutOfRange(usize, usize),
     #[error("duplicating by float is undefined")]
+    /// Float argument was provided for multiplication
     DuplicatingByFloat,
     #[error("unexpected evaluation error")]
+    /// Unknown unexpected error
     Unknown,
 }
 
@@ -43,7 +51,7 @@ pub fn evaluate_list(input: &str) -> Result<Vec<Result<String, EvalError>>, Eval
     Ok(results)
 }
 
-// Evaluates a single string multiplication command, returning a new String without quote marks.
+/// Evaluates a single string multiplication command, returning a new String without quote marks.
 pub fn evaluate(input: &str) -> Result<String, EvalError> {
     let comm = parse_command(input);
     match comm {
@@ -65,7 +73,7 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                             (command
                                 .params
                                 .iter()
-                                .filter(|p| matches!(p, StrPiece::Num(_)))
+                                .filter(|p| matches!(p, ParamsPiece::Num(_)))
                                 .count() as isize
                                 + index) as usize
                         } else {
@@ -81,9 +89,9 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                 };
                 for part in command.params.iter_mut() {
                     match part {
-                        StrPiece::Num(n) => {
+                        ParamsPiece::Num(n) => {
                             if i == index {
-                                *part = StrPiece::Num(*n * argument);
+                                *part = ParamsPiece::Num(*n * argument);
                                 i = usize::MAX;
                                 break;
                             }
@@ -98,7 +106,7 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                         command
                             .params
                             .iter()
-                            .filter(|p| matches!(p, StrPiece::Num(_)))
+                            .filter(|p| matches!(p, ParamsPiece::Num(_)))
                             .count(),
                     ));
                 }
@@ -110,7 +118,7 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                 };
                 for part in &mut command.params {
                     match part {
-                        StrPiece::Num(n) => *n *= argument,
+                        ParamsPiece::Num(n) => *n *= argument,
                         _ => continue,
                     }
                 }
@@ -134,8 +142,8 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                 for _ in 0..(argument - 1) {
                     for param in &command.params {
                         match param {
-                            StrPiece::Num(n) => new_parts.push(StrPiece::Num(*n)),
-                            StrPiece::Str(text) => new_parts.push(StrPiece::Str(text.to_string())),
+                            ParamsPiece::Num(n) => new_parts.push(ParamsPiece::Num(*n)),
+                            ParamsPiece::Str(text) => new_parts.push(ParamsPiece::Str(text.to_string())),
                         }
                     }
                 }
@@ -146,16 +154,16 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
     Ok(to_string(command.params))
 }
 
-pub(crate) fn to_string(parts: Vec<StrPiece>) -> String {
+pub(crate) fn to_string(parts: Vec<ParamsPiece>) -> String {
     parts
         .iter()
         .map(|p| match p {
-            StrPiece::Num(n) => {
+            ParamsPiece::Num(n) => {
                 let rounded = format!("{:.8}", n);
                 let trimmed = rounded.trim_end_matches('0').trim_end_matches('.');
                 trimmed.to_string()
             }
-            StrPiece::Str(text) => text.to_string(),
+            ParamsPiece::Str(text) => text.to_string(),
         })
         .collect::<Vec<String>>()
         .join("")

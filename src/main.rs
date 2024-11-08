@@ -2,6 +2,7 @@ use std::env;
 
 use string_mult::evaluating::evaluate_list;
 
+/// CLI interface
 fn main() {
     let args: Vec<String> = env::args().collect();
 

@@ -29,7 +29,7 @@ wrong_command = { (file_spacing* ~ (!command ~ ANY)+ ~ file_spacing*) }
 
 /// silent rule for inline whitespace
 spacing = _{ " " | "\t" }
-/// whitespace spacing in file
+/// silent rule for whitespace spacing in file
 file_spacing = _{ WHITE_SPACE }
 /// silent rule for quote marks
 str_marks = _{ "\"" }

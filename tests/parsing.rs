@@ -38,10 +38,10 @@ mod parsing {
 
         let res = res.unwrap();
         assert_eq!(res.params.len(), 4);
-        assert_eq!(res.params[0], StrPiece::Num(15_f64));
-        assert_eq!(res.params[1], StrPiece::Str(" packs, ".to_string()));
-        assert_eq!(res.params[2], StrPiece::Num(10_f64));
-        assert_eq!(res.params[3], StrPiece::Str("mg/l".to_string()));
+        assert_eq!(res.params[0], ParamsPiece::Num(15_f64));
+        assert_eq!(res.params[1], ParamsPiece::Str(" packs, ".to_string()));
+        assert_eq!(res.params[2], ParamsPiece::Num(10_f64));
+        assert_eq!(res.params[3], ParamsPiece::Str("mg/l".to_string()));
 
         assert_eq!(res.operations.len(), 1);
         assert_eq!(
@@ -57,6 +57,17 @@ mod parsing {
         let res = parse_command("\"15 packs, 10mg/l *[1]\" ***** 10");
         assert!(res.is_err());
         return if let Err(ParseError::WrongCommand(_)) = res {
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("wrong error"))
+        };
+    }
+
+    #[test]
+    fn wrong_command_in_list() -> anyhow::Result<()> {
+        let res = parse_list("\"15 packs, 10mg/l *[1]\" ***** 10");
+        assert!(res.is_ok());
+        return if let Err(ParseError::WrongCommand(_)) = res.unwrap()[0] {
             Ok(())
         } else {
             Err(anyhow::anyhow!("wrong error"))

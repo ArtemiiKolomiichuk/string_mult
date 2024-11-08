@@ -1,7 +1,7 @@
 [package]
 name = "string_mult"
 description = "String multiplication commands parser and evaluator"
-version = "0.3.1"
+version = "0.3.3"
 edition = "2021"
 authors = ["Artemii Kolomiichuk <artemii.kolomiichuk@ukma.edu.ua>"]
 readme = "README.md"

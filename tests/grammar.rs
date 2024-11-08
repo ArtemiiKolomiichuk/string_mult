@@ -177,4 +177,19 @@ mod grammar {
         assert_eq!(third.as_str(), "\"19 bottles.\" **3");
         Ok(())
     }
+
+    #[test]
+    fn wrong_command_in_list() -> anyhow::Result<()> {
+        let data = StringMultGrammar::parse(
+            Rule::commands_list,
+            "\"12 packs\" *** 3 *2\n \"4packs\" *****2 \"19 bottles.\" **3",
+        )?
+        .next()
+        .ok_or(anyhow::anyhow!("no command"))?;
+        let mut inner_pairs = data.into_inner();
+        _ = inner_pairs.next().unwrap();
+        let second = inner_pairs.next().unwrap();
+        assert!(second.as_rule() == Rule::wrong_command);
+        Ok(())
+    }
 }

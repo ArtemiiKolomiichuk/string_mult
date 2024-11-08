@@ -22,7 +22,9 @@ The library uses the `pest` parser generator to define the grammar of the comman
 
 ![parsing scheme illustraition](https://raw.githubusercontent.com/ArtemiiKolomiichuk/string_mult/refs/heads/master/scheme.png)
 
-2. **Evaluation**: The library includes `evaluate` and `evaluate_list` functions that parse string and string from file respectively and return the result of the command execution.
+2. **Parsing**: The library includes `parse_command` and `parse_list` functions that parse string and return `StringMultCommand` and `Vec<StringMultCommand>` respectively.
+
+3. **Evaluation**: The library includes `evaluate` and `evaluate_list` functions that parse string and string from file respectively and return the result of the command execution.
 
 ## Commands examples
 
@@ -52,3 +54,15 @@ The library uses the `pest` parser generator to define the grammar of the comman
     ###### Duplicate reversed string n times 
     - `"123" *** -1` -> `321`
     - `"123" *** -2` -> `321321`  
+\
+&nbsp;
+
+5. Evaluate commands list
+    -  + `"12 packs " *** 3 *2`
+       + `"4packs" *[2]2`
+       + `"9 bottles." **3`
+    - &darr;
+    - + `24 packs 12 packs 12 packs `
+      + `Error: index '2' out of range '0..1'`
+      + `27 bottles`
+

@@ -1,3 +1,5 @@
+//! Provides a parser for simple commands that allow multiplying strings and evaluation functions to retrieve results.
+
 mod modules;
 
 pub use modules::*;

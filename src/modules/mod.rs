@@ -8,13 +8,13 @@ use parsing::ParseError;
 #[derive(Debug, Clone)]
 pub struct StringMultCommand {
     /// The string to operate on.
-    pub params: Vec<StrPiece>,
+    pub params: Vec<ParamsPiece>,
     /// The operations to perform.
     pub operations: Vec<StringMultOperation>,
 }
 
 /// Reverses the parameters.
-pub(crate) fn rev_params(params: Vec<StrPiece>) -> Result<Vec<StrPiece>, ParseError> {
+pub(crate) fn rev_params(params: Vec<ParamsPiece>) -> Result<Vec<ParamsPiece>, ParseError> {
     let str = evaluating::to_string(params);
     let new_str = format!("\"{}\"", str.chars().rev().collect::<String>());
     parsing::parse_params(&new_str)
@@ -30,8 +30,8 @@ pub struct StringMultOperation {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-/// A piece of a string that is being operated on.
-pub enum StrPiece {
+/// A piece of a string params that is being operated on.
+pub enum ParamsPiece {
     /// A number.
     Num(f64),
     /// Not a number.
