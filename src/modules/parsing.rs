@@ -24,6 +24,28 @@ pub enum ParseError {
     Unknown,
 }
 
+/// Parses just the `Vec<StrPiece>` params.
+pub(crate) fn parse_params(input: &str) -> Result<Vec<StrPiece>, ParseError> {
+    let data = StringMultGrammar::parse(Rule::str_param, input);
+    if data.is_err() {
+        return Err(ParseError::WrongCommand(input.to_string()));
+    }
+    let inner = data
+        .unwrap()
+        .next()
+        .ok_or(ParseError::WrongCommand(input.to_string()))?
+        .into_inner();
+
+    let mut pieces: Vec<StrPiece> = Vec::new();
+    for part in inner {
+        match part.as_rule() {
+            Rule::num => pieces.push(StrPiece::Num(part.as_str().parse::<f64>()?)),
+            Rule::inner_str_text => pieces.push(StrPiece::Str(part.as_str().to_string())),
+            r => return Err(ParseError::UnexpectedRule(format!("{:?}", r))),
+        }
+    }
+    Ok(pieces)
+}
 
 /// Parses a list of commands.
 pub fn parse_list(input: &str) -> Result<Vec<Result<StringMultCommand, ParseError>>, ParseError> {
@@ -34,12 +56,15 @@ pub fn parse_list(input: &str) -> Result<Vec<Result<StringMultCommand, ParseErro
         return Err(ParseError::NoCommandsList);
     }
 
-    let inner = data.unwrap().next().ok_or(ParseError::NoCommandsList)?.into_inner();
+    let inner = data
+        .unwrap()
+        .next()
+        .ok_or(ParseError::NoCommandsList)?
+        .into_inner();
     for part in inner {
         if part.as_rule() == Rule::wrong_command {
             results.push(Err(ParseError::WrongCommand(part.as_str().to_string())));
-        }
-        else{
+        } else {
             results.push(parse_command(part.as_str()));
         }
     }
@@ -73,7 +98,9 @@ pub fn parse_command(input: &str) -> Result<StringMultCommand, ParseError> {
                         Rule::num => {
                             pieces.push(StrPiece::Num(inner_part.as_str().parse::<f64>()?))
                         }
-                        Rule::inner_str_text => pieces.push(StrPiece::Str(inner_part.as_str().to_string())),
+                        Rule::inner_str_text => {
+                            pieces.push(StrPiece::Str(inner_part.as_str().to_string()))
+                        }
                         r => return Err(ParseError::UnexpectedRule(format!("{:?}", r))),
                     }
                 }

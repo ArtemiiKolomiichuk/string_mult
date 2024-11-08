@@ -162,7 +162,7 @@ dependencies = [
 
 [[package]]
 name = "string_mult"
-version = "0.2.3"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "either",

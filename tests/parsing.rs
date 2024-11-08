@@ -18,7 +18,9 @@ mod parsing {
 
     #[test]
     fn parsing_list_with_errors() -> anyhow::Result<()> {
-        let res = parse_list("\"15 packs, 10mg/l\" *[0] 100\n \"15 packs, 10mg/l\" ***** 101\n\"3434\" **2 ");
+        let res = parse_list(
+            "\"15 packs, 10mg/l\" *[0] 100\n \"15 packs, 10mg/l\" ***** 101\n\"3434\" **2 ",
+        );
         println!("{:#?}", res);
         assert!(res.is_ok());
         let res = res.unwrap();
