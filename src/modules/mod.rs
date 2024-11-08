@@ -15,7 +15,7 @@ pub struct StringMultCommand {
 
 /// Reverses the parameters.
 pub(crate) fn rev_params(params: Vec<ParamsPiece>) -> Result<Vec<ParamsPiece>, ParseError> {
-    let str = evaluating::to_string(params);
+    let str = to_string(params);
     let new_str = format!("\"{}\"", str.chars().rev().collect::<String>());
     parsing::parse_params(&new_str)
 }
@@ -47,4 +47,20 @@ pub enum OperationType {
     MultAll,
     /// Duplicate the string times the argument.
     Duplicate,
+}
+
+/// Converts a vector of `ParamsPiece` to a string.
+pub(crate) fn to_string(parts: Vec<ParamsPiece>) -> String {
+    parts
+        .iter()
+        .map(|p| match p {
+            ParamsPiece::Num(n) => {
+                let rounded = format!("{:.8}", n);
+                let trimmed = rounded.trim_end_matches('0').trim_end_matches('.');
+                trimmed.to_string()
+            }
+            ParamsPiece::Str(text) => text.to_string(),
+        })
+        .collect::<Vec<String>>()
+        .join("")
 }

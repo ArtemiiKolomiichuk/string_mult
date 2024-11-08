@@ -153,18 +153,3 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
     }
     Ok(to_string(command.params))
 }
-
-pub(crate) fn to_string(parts: Vec<ParamsPiece>) -> String {
-    parts
-        .iter()
-        .map(|p| match p {
-            ParamsPiece::Num(n) => {
-                let rounded = format!("{:.8}", n);
-                let trimmed = rounded.trim_end_matches('0').trim_end_matches('.');
-                trimmed.to_string()
-            }
-            ParamsPiece::Str(text) => text.to_string(),
-        })
-        .collect::<Vec<String>>()
-        .join("")
-}
