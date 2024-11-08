@@ -1,7 +1,7 @@
 use pest::Parser;
 use string_mult::*;
 
-mod parser {
+mod grammar {
     use super::*;
 
     #[test]

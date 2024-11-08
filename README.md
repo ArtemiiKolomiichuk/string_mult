@@ -1,5 +1,8 @@
 # String Multiplication
 
+- Link: https://crates.io/crates/string_mult
+- Docs: https://docs.rs/string_mult/latest/string_mult/
+
 The library provides a parser for simple commands that allow multiplying strings. The library supports commands for multiplying numbers in strings, duplicating strings, and multiplying all numbers in a string. The results of the parsing process are used to evaluate the commands and return their results. 
 
 The library uses the `pest` parser generator to define the grammar of the commands. 

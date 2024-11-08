@@ -22,7 +22,10 @@ str_param = { (str_marks ~ (!str_marks ~ (num | inner_str_text))* ~ str_marks) }
 command = { spacing* ~ str_param  ~ (spacing* ~ (((multAll | mult) ~ spacing* ~ num) | (duplicate ~ spacing* ~ int)))+ }
 
 /// list of commands
-commands_list = {(file_spacing* ~ command ~ file_spacing*)+}
+commands_list = {((file_spacing* ~ command ~ file_spacing*) | wrong_command)+}
+
+/// wrong command inside commands list
+wrong_command = { (file_spacing* ~ (!command ~ ANY)+ ~ file_spacing*) }
 
 /// silent rule for inline whitespace
 spacing = _{ " " | "\t" }

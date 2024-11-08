@@ -53,7 +53,7 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                 for inner_part in part.into_inner() {
                     match inner_part.as_rule() {
                         Rule::num => parts.push(StrPiece::Num(inner_part.as_str().parse::<f64>()?)),
-                        Rule::inner_str_text => parts.push(StrPiece::Str(inner_part.as_str())),
+                        Rule::inner_str_text => parts.push(StrPiece::Str(inner_part.to_string())),
                         r => {
                             return Err(anyhow::anyhow!(EvalError::UnexpectedRule(format!(
                                 "{:?}",
@@ -101,7 +101,7 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                                     Rule::num => parts
                                         .push(StrPiece::Num(inner_part.as_str().parse::<f64>()?)),
                                     Rule::inner_str_text => {
-                                        parts.push(StrPiece::Str(inner_part.as_str()))
+                                        parts.push(StrPiece::Str(inner_part.to_string()))
                                     }
                                     r => {
                                         return Err(anyhow::anyhow!(EvalError::UnexpectedRule(
@@ -118,7 +118,9 @@ pub fn evaluate(input: &str) -> anyhow::Result<String> {
                             for part in &parts {
                                 match part {
                                     StrPiece::Num(n) => new_parts.push(StrPiece::Num(*n)),
-                                    StrPiece::Str(text) => new_parts.push(StrPiece::Str(text)),
+                                    StrPiece::Str(text) => {
+                                        new_parts.push(StrPiece::Str(text.to_string()))
+                                    }
                                 }
                             }
                         }
