@@ -19,6 +19,7 @@ The library uses the `pest` parser generator to define the grammar of the comman
    - `str_param`: Recognizes string parameters surrounded by quote marks.
    - `command`: Recognizes complete commands for multiplying strings.
    - `commands_list`: Recognizes a list of commands.
+   - `wrong_command`: Recognizes incorrect commands in commands list.
 
 ![parsing scheme illustraition](https://raw.githubusercontent.com/ArtemiiKolomiichuk/string_mult/refs/heads/master/scheme.png)
 

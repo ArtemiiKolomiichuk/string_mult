@@ -11,3 +11,9 @@ test:
 
 clean:
     cargo clean
+
+fmt:
+	cargo fmt
+
+clippy:
+	cargo clippy -- -D warnings
