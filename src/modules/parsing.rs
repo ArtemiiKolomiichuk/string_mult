@@ -1,8 +1,8 @@
 //! Provides parsing functionality for retrieving `StringMultCommand` from string
 
-use super::*;
+use super::{Either, OperationType, ParamsPiece, StringMultOperation};
 use crate::{Rule, StringMultGrammar};
-use pest::Parser;
+use pest::{iterators::Pairs, Parser};
 use thiserror::Error;
 
 use super::StringMultCommand;
@@ -50,7 +50,7 @@ pub(crate) fn parse_params(input: &str) -> Result<Vec<ParamsPiece>, ParseError> 
         match part.as_rule() {
             Rule::num => pieces.push(ParamsPiece::Num(part.as_str().parse::<f64>()?)),
             Rule::inner_str_text => pieces.push(ParamsPiece::Str(part.as_str().to_string())),
-            r => return Err(ParseError::UnexpectedRule(format!("{:?}", r))),
+            r => return Err(ParseError::UnexpectedRule(format!("{r:?}"))),
         }
     }
     Ok(pieces)
@@ -61,37 +61,32 @@ pub fn parse_list(input: &str) -> Result<Vec<Result<StringMultCommand, ParseErro
     let mut results = Vec::new();
 
     let data = StringMultGrammar::parse(Rule::commands_list, input);
-    if data.is_err() {
-        return Err(ParseError::NoCommandsList);
-    }
-
-    let inner = data
-        .unwrap()
-        .next()
-        .ok_or(ParseError::NoCommandsList)?
-        .into_inner();
-    for part in inner {
-        if part.as_rule() == Rule::wrong_command {
-            results.push(Err(ParseError::WrongCommand(part.as_str().to_string())));
-        } else {
-            results.push(parse_command(part.as_str()));
+    match data {
+        Ok(mut data) => {
+            let inner = data.next().ok_or(ParseError::NoCommandsList)?.into_inner();
+            for part in inner {
+                if part.as_rule() == Rule::wrong_command {
+                    results.push(Err(ParseError::WrongCommand(part.as_str().to_string())));
+                } else {
+                    results.push(parse_command(part.as_str()));
+                }
+            }
+            Ok(results)
         }
+        Err(_) => Err(ParseError::NoCommandsList),
     }
-
-    Ok(results)
 }
 
 /// Parses a string into a `StringMultCommand`.
 pub fn parse_command(input: &str) -> Result<StringMultCommand, ParseError> {
     let data = StringMultGrammar::parse(Rule::command, input);
-    if data.is_err() {
-        return Err(ParseError::WrongCommand(input.to_string()));
-    }
-    let inner = data
-        .unwrap()
-        .next()
-        .ok_or(ParseError::WrongCommand(input.to_string()))?
-        .into_inner();
+    let inner: Pairs<'_, Rule> = match data {
+        Ok(mut data) => data
+            .next()
+            .ok_or(ParseError::WrongCommand(input.to_string()))?
+            .into_inner(),
+        Err(_) => return Err(ParseError::WrongCommand(input.to_string())),
+    };
 
     let mut pieces: Vec<ParamsPiece> = Vec::new();
 
@@ -105,12 +100,12 @@ pub fn parse_command(input: &str) -> Result<StringMultCommand, ParseError> {
                 for inner_part in part.into_inner() {
                     match inner_part.as_rule() {
                         Rule::num => {
-                            pieces.push(ParamsPiece::Num(inner_part.as_str().parse::<f64>()?))
+                            pieces.push(ParamsPiece::Num(inner_part.as_str().parse::<f64>()?));
                         }
                         Rule::inner_str_text => {
-                            pieces.push(ParamsPiece::Str(inner_part.as_str().to_string()))
+                            pieces.push(ParamsPiece::Str(inner_part.as_str().to_string()));
                         }
-                        r => return Err(ParseError::UnexpectedRule(format!("{:?}", r))),
+                        r => return Err(ParseError::UnexpectedRule(format!("{r:?}"))),
                     }
                 }
             }
@@ -151,7 +146,7 @@ pub fn parse_command(input: &str) -> Result<StringMultCommand, ParseError> {
                 }
             }
 
-            r => return Err(ParseError::UnexpectedRule(format!("{:?}", r))),
+            r => return Err(ParseError::UnexpectedRule(format!("{r:?}"))),
         }
     }
     Ok(StringMultCommand {

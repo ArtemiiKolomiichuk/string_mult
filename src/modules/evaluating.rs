@@ -7,7 +7,9 @@ use Either::{Left, Right};
 
 use crate::{Rule, StringMultGrammar};
 
-use super::*;
+use super::{
+    parsing, rev_params, to_string, Either, OperationType, ParamsPiece, StringMultCommand,
+};
 
 #[derive(Error, Debug)]
 ///An error that can occur during evaluation.
@@ -19,7 +21,7 @@ pub enum EvalError {
     /// No command was found
     NoCommand,
     #[error("parsing error")]
-    /// Parsing error occured 
+    /// Parsing error occured
     ParseError(#[from] ParseError),
 
     #[error("index '{0}' out of range '0..{1}'")]
@@ -37,31 +39,29 @@ pub enum EvalError {
 pub fn evaluate_list(input: &str) -> Result<Vec<Result<String, EvalError>>, EvalError> {
     let mut results = Vec::new();
     let data = StringMultGrammar::parse(Rule::commands_list, input);
-    if data.is_err() {
-        return Err(EvalError::NoCommandsList);
+    match data {
+        Ok(mut data) => {
+            let inner = data.next().ok_or(EvalError::NoCommandsList)?.into_inner();
+            for part in inner {
+                results.push(evaluate(part.as_str()));
+            }
+            Ok(results)
+        }
+        Err(_) => Err(EvalError::NoCommandsList),
     }
-    let inner = data
-        .unwrap()
-        .next()
-        .ok_or(EvalError::NoCommandsList)?
-        .into_inner();
-    for part in inner {
-        results.push(evaluate(part.as_str()));
-    }
-    Ok(results)
 }
 
 /// Evaluates a single string multiplication command, returning a new String without quote marks.
 pub fn evaluate(input: &str) -> Result<String, EvalError> {
     let comm = parse_command(input);
     match comm {
-        Ok(c) => evaluate_command(c),
+        Ok(c) => evaluate_command(&c),
         Err(e) => Err(EvalError::ParseError(e)),
     }
 }
 
 /// Evaluates a single `StringMultCommand`, returning a new String without quote marks.
-pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
+pub fn evaluate_command(input: &StringMultCommand) -> Result<String, EvalError> {
     let mut command = input.clone();
 
     for operation in command.operations {
@@ -87,7 +87,7 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                     Left(arg) => arg as f64,
                     Right(arg) => arg,
                 };
-                for part in command.params.iter_mut() {
+                for part in &mut command.params {
                     match part {
                         ParamsPiece::Num(n) => {
                             if i == index {
@@ -97,7 +97,7 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                             }
                             i += 1;
                         }
-                        _ => continue,
+                        ParamsPiece::Str(_) => continue,
                     }
                 }
                 if i != usize::MAX {
@@ -119,7 +119,7 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                 for part in &mut command.params {
                     match part {
                         ParamsPiece::Num(n) => *n *= argument,
-                        _ => continue,
+                        ParamsPiece::Str(_) => continue,
                     }
                 }
             }
@@ -129,10 +129,10 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                     Right(_) => return Err(EvalError::DuplicatingByFloat),
                 };
                 if argument == 0 {
-                    return Ok("".to_string());
+                    return Ok(String::new());
                 }
                 if argument < 0 {
-                    command.params = match rev_params(command.params) {
+                    command.params = match rev_params(&command.params) {
                         Ok(p) => p,
                         Err(e) => return Err(EvalError::ParseError(e)),
                     };
@@ -143,7 +143,9 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
                     for param in &command.params {
                         match param {
                             ParamsPiece::Num(n) => new_parts.push(ParamsPiece::Num(*n)),
-                            ParamsPiece::Str(text) => new_parts.push(ParamsPiece::Str(text.to_string())),
+                            ParamsPiece::Str(text) => {
+                                new_parts.push(ParamsPiece::Str(text.to_string()));
+                            }
                         }
                     }
                 }
@@ -151,5 +153,5 @@ pub fn evaluate_command(input: StringMultCommand) -> Result<String, EvalError> {
             }
         };
     }
-    Ok(to_string(command.params))
+    Ok(to_string(&command.params))
 }
